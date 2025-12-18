@@ -11,6 +11,7 @@ app.post("/webhook", async (req, res) => {
 
     const replyToken = event.replyToken;
     const userText = event.message.text;
+console.log("TEXT:", userText);
 
     await axios.post(
       "https://api.line.me/v2/bot/message/reply",
@@ -19,8 +20,8 @@ app.post("/webhook", async (req, res) => {
         messages: [
           {
             type: "text",
-            text: `受け取りました：「${userText}」`,
-          },
+           text: `【業務受付】\n内容：${userText}`
+　　　　　}
         ],
       },
       {
