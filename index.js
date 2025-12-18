@@ -1,24 +1,34 @@
-const express = require("express");
-const app = express();
+const axios = require("axios");
 
-// ★これが必須
-app.use(express.json());
-
-// 生存確認用
-app.get("/", (req, res) => {
-  res.status(200).send("ok");
-});
-
-// ★Webhook（最重要）
-app.post("/webhook", (req, res) => {
-  // LINEには即200を返す（処理は後回し）
+app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
 
-  // 中身は今は何もしなくてOK
-  console.log("Webhook received");
-});
+  const events = req.body.events || [];
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log("listening on", port);
+  for (const event of events) {
+    if (event.type !== "message") continue;
+    if (event.message.type !== "text") continue;
+
+    const replyToken = event.replyToken;
+    const userText = event.message.text;
+
+    await axios.post(
+      "https://api.line.me/v2/bot/message/reply",
+      {
+        replyToken: replyToken,
+        messages: [
+          {
+            type: "text",
+            text: `受け取りました：「${userText}」`,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
 });
